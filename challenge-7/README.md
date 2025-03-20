@@ -120,20 +120,6 @@ Choose the approach that interests you most, or try multiple approaches to compa
 - Measure response quality, accuracy, and helpfulness
 - Optimize prompt engineering and agent interactions
 
-## Framework Integration Insights
-
-Recent developments have shown promising ways to integrate Semantic Kernel and AutoGen:
-
-### From Semantic Kernel to AutoGen
-- Use Semantic Kernel plugins as custom tools in AutoGen agents
-- Leverage Semantic Kernel's planner for high-level task decomposition in AutoGen
-- Export Semantic Kernel agents as participants in AutoGen group chats
-
-### From AutoGen to Semantic Kernel
-- Use AutoGen's multi-agent conversation patterns within Semantic Kernel's framework
-- Leverage AutoGen's research-oriented patterns for Semantic Kernel agent design
-- Implement AutoGen's state tracking mechanisms in Semantic Kernel agents
-
 ## Challenge Success Criteria
 
 Your Employee Onboarding Assistant System should:

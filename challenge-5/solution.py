@@ -37,7 +37,6 @@
 #
 # **Azure AI Search** (formerly Azure Cognitive Search) is Microsoft's cloud search service that enables:
 #
-# - **Document Ingestion**: Processing various file types (PDFs, Word, HTML, images with OCR, etc.)
 # - **Indexing**: Creating searchable indexes with text analysis capabilities
 # - **Semantic Search**: Using AI to understand query intent and contextual meaning
 # - **Vector Search**: Utilizing embeddings to find conceptually similar content
@@ -379,7 +378,7 @@ def index_documents(documents, search_client):
 
 # %% Process the Employee Handbook PDF
 async def process_and_index_pdf():
-    pdf_path = "docs/employee_handbook.pdf"
+    pdf_path = "docs/contoso_electronics.pdf"
     pdf_pages = extract_text_from_pdf(pdf_path)
     pdf_chunks = await chunk_text_with_embeddings(pdf_pages)
     
@@ -395,7 +394,7 @@ async def init_vector_search():
     return True
 
 # When running in Jupyter, you can initialize with:
-# await init_vector_search()
+await init_vector_search()
 
 # %%
 # Define a function to search HR documents using vector search
@@ -440,7 +439,7 @@ async def search_hr_documents(query, top=5):
         return f"Error performing search: {str(e)}"
 
 # Let's test the vector search
-# await search_hr_documents("What are the company values?", top=3)
+await search_hr_documents("What are the company values?", top=3)
 
 
 # %% [markdown]
@@ -538,9 +537,10 @@ async def test_agentic_search():
     chat_history = ChatHistory()
 
     user_inputs = [
-        "What is the companies mission?",
-        "What are the data security policies?",
-        "What should I do on my first day at the company?",
+        "What benefits am I eligible for and when do they start?",
+        "What is the process for requesting time off or reporting sick leave?",
+        "Where can I find information about the company's dress code policy?",
+        "How does the performance review process work and how often will I be evaluated?"
     ]
 
     for user_input in user_inputs:
@@ -621,8 +621,14 @@ async def test_agentic_search():
         # Display formatted HTML
         display(Markdown(html_output))
 
+# %% [markdown]
+# Now let's test our RAG agent with some example queries.
+
 # %%
-# await test_agentic_search()
+await test_agentic_search()
+
+# %% [markdown]
+# It's time to try and prompt the agent yourself with your own questions. Try creating other queries to see how the agent performs. Feel free to modify the system prompt to see if you can improve the agent's performance!
 
 # %% [markdown]
 # ## 8. Conclusion

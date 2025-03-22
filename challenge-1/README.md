@@ -28,7 +28,7 @@ Unlike traditional AI systems that simply process inputs and generate outputs, A
 
 ## Core Components of an AI Agent
 
-AI agents consist of several key components that work together, similar to how different parts of your brain and body collaborate to help you function.
+#### AI agents consist of several key components that work together, similar to how different parts of your brain and body collaborate to help you function.
 
 ![AI Agent Components](./images/ai-agent-components.png)
 
@@ -46,7 +46,7 @@ The persona is essentially the "character" and ruleset of the agent - it defines
 ### 2. GenAI Models
 These are the "brains" of the AI agent - the underlying technology that enables understanding and generating human-like responses.
 
-- **Large Language Models (LLMs)**: Foundation models like GPT-4, Claude, or Llama that provide reasoning capabilities. These massive AI models have been trained on billions of text examples and can understand and generate human language. They're like the general knowledge and reasoning center of the agent.
+- **Large Language Models (LLMs)**: Foundation models like GPT-4, Mistral, or Llama that provide reasoning capabilities. These massive AI models have been trained on billions of text examples and can understand and generate human language. They're like the general knowledge and reasoning center of the agent.
 
 - **Small Language Models (SLMs)**: More focused, efficient models designed for specific tasks. While not as broadly capable as LLMs, they're faster and more resource-efficient for specialized functions, like a calculator that's excellent at math but doesn't need to write poetry.
 

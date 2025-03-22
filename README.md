@@ -33,9 +33,9 @@ This hackathon consists of 7 progressive challenges that will take you from the 
 
 ## Getting Started
 
-1. Clone this repository
-2. Follow the setup instructions in Challenge 0
-3. Progress through each challenge sequentially
+1. Fork this repository to your GitHub account
+2. Open a GitHub Codespace from the forked repository
+3. Progress through each challenge sequentially, starting with [Challenge 0](challenge-0/README.md)
 4. Each challenge has its own folder with a README.md containing instructions
 
 ## Challenge Overview

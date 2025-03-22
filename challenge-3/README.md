@@ -17,7 +17,7 @@ This challenge comes with a pre-prepared Jupyter notebook (`solution.ipynb`) tha
 ### Prerequisites
 
 - Python environment with Jupyter support
-- OpenAI API key (instructions for setup are in the notebook)
+- .env file pre-configured on [challenge-0](../challenge-0/README.md)
 - Basic familiarity with Python
 
 ## What You'll Learn
@@ -57,7 +57,7 @@ See practical examples of prompt optimization:
 
 ## How to Complete This Challenge
 
-1. Open the `solution.ipynb` notebook in Jupyter
+1. Open the [solution.ipynb](solution.ipynb) notebook
 2. Run through each cell in sequence
 3. Read the explanations and observe the examples
 4. Try modifying some of the example prompts to see how changes affect outputs

@@ -55,7 +55,7 @@ Semantic Kernel is an open-source SDK that integrates Large Language Models (LLM
 
 #### Key Features:
 - **Plugins Architecture**: Reusable components that extend agent capabilities.
-- **Multiple Language Support**: SDKs available for C#, Python, Java, and TypeScript.
+- **Multiple Language Support**: SDKs available for C#, Python and Java
 - **Enterprise Integration**: Designed for seamless integration with existing systems.
 - **Production-Ready**: Focuses on stability and reliability for enterprise applications.
 
@@ -148,4 +148,4 @@ AI agent frameworks provide the foundation upon which you'll build your AI solut
 
 As we progress through this hackathon, you'll gain hands-on experience with these frameworks, seeing firsthand how they enable different agent patterns and capabilities.
 
-Ready to move on? Proceed to Challenge 3 to dive into agentic design patterns, where we'll explore the fundamental approaches to building effective AI agents. 
+Ready to move on? [Proceed to Challenge 3](../challenge-3/README.md) to dive into agentic design patterns, where we'll explore the fundamental approaches to building effective AI agents. 

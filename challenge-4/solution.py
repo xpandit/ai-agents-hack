@@ -113,7 +113,17 @@ print("Semantic Kernel initialized successfully!")
 # %% [markdown]
 # ## 1. Creating Semantic Functions (Prompts as Functions)
 #
-# Semantic functions are AI prompts wrapped as callable functions. They help standardize how you interact with LLMs and make prompts reusable.
+# Semantic functions are AI prompts wrapped as callable functions. They help standardize how you interact with LLMs and make prompts reusable, maintainable, and composable.
+#
+# Key benefits of semantic functions:
+#
+# - **Consistency**: Ensures a consistent approach to prompt engineering across your organization
+# - **Versioning**: Allows you to version and track changes to your prompts like code
+# - **Parameterization**: Makes prompts dynamic by accepting input parameters
+# - **Testing**: Enables unit testing of prompts to ensure they produce expected results
+# - **Composition**: Facilitates building complex AI workflows by combining multiple functions
+#
+# In enterprise settings, semantic functions help teams collaborate on prompt development and ensure that AI behaviors remain consistent across different parts of an application. They're particularly valuable when you need to maintain a large library of prompts that may need to evolve over time.
 #
 # Let's create a simple semantic function that helps with employee onboarding by explaining company acronyms:
 
@@ -162,7 +172,19 @@ print(result)
 # %% [markdown]
 # ## 2. Creating Native Functions (Code as Functions)
 #
-# Native functions are regular code functions that you register with the kernel. They can be called by the AI or directly from your code. Let's create a simple IT support plugin with native functions for common tasks.
+# Native functions are regular code functions that you register with the kernel. They can be called by the AI or directly from your code, providing a bridge between AI capabilities and your existing systems and data sources.
+#
+# Native functions excel at:
+#
+# - **Precise Operations**: Performing exact calculations, data transformations, and validations
+# - **System Integration**: Connecting to databases, APIs, and other enterprise systems
+# - **Access Control**: Implementing security boundaries and authorization checks
+# - **Business Logic**: Enforcing complex business rules and compliance requirements
+# - **Error Handling**: Providing robust error handling and fallback mechanisms
+#
+# By combining native functions with semantic functions, you create a powerful synergy: the AI provides natural language understanding and generation, while your code handles precise operations and integrations. This pattern is essential for building enterprise-grade AI applications that can interact with existing systems while maintaining security and reliability.
+#
+# Let's create a simple IT support plugin with native functions for common tasks.
 
 # %%
 class ITSupportPlugin:
@@ -322,7 +344,16 @@ print(formatted_guide)
 # %% [markdown]
 # ## 3. Creating a Semantic Function that Calls Native Functions
 #
-# Now let's create a semantic function that can call our native functions directly from the prompt template. This demonstrates how AI can use functions as tools within its reasoning process:
+# Now let's create a semantic function that can call our native functions directly from the prompt template. This demonstrates how AI can use functions as tools within its reasoning process.
+#
+# This approach has several advantages:
+#
+# - **Deterministic Execution**: You control exactly which functions are called and when
+# - **Fixed Structure**: The output will always follow the same format with consistent sections
+# - **Reduced Hallucination**: By directly injecting factual information from functions, you minimize the risk of the AI "making up" information
+# - **Composability**: You can create complex templates that call multiple functions in a predictable sequence
+#
+# This technique is particularly valuable for generating structured documents, reports, or guides where consistency and accuracy are critical. For example, product descriptions, legal documents, or technical specifications that need to incorporate data from multiple systems.
 
 # %%
 # Define a prompt that correctly calls native functions using proper SK syntax
@@ -409,6 +440,14 @@ print(dev_guide)
 #
 # 1. **Manual Function Calling**: Explicitly calling functions from your code
 # 2. **Automatic Function Calling**: Letting the AI decide which functions to call based on the context
+#
+# Each approach has its own strengths and ideal use cases:
+#
+# - **Manual Function Calling**: Best for deterministic workflows where you know exactly which functions need to be called and in what order. This provides maximum control and is ideal for critical business processes where predictability is essential. For example, a financial application that needs to follow specific compliance procedures.
+#
+# - **Automatic Function Calling**: Ideal for scenarios where the AI needs to determine which functions to call based on user input. This provides more flexibility and is perfect for conversational interfaces where users can ask a wide variety of questions. For example, a customer service bot that needs to access different systems based on the user's query.
+#
+# In enterprise applications, you'll often use a combination of both approaches - automatic function calling for the user-facing conversation, with certain critical operations using manual function calls with explicit approval workflows.
 #
 # We've already seen manual function calling. Now let's set up automatic function calling:
 
@@ -538,35 +577,22 @@ response = await chat_with_hr_assistant(question)
 print(response)
 
 # %% [markdown]
-# ## Conclusion
-#
-# In this challenge, we've explored the key features of Semantic Kernel that make it powerful for building AI agents:
-#
-# 1. **Semantic Functions**: Creating reusable AI prompts as functions
-# 2. **Native Functions**: Integrating code with AI capabilities
-# 3. **Plugins**: Organizing related functions into logical groups
-# 4. **Function Calling**: Giving the AI the ability to call your functions when needed
-# 5. **Chat Context**: Maintaining conversation state across interactions
-#
-# Our onboarding assistant demonstrates how Semantic Kernel can be used to build practical applications that combine AI with custom business logic. By structuring your application this way, you get:
-#
-# - **Modularity**: Easy to extend with new functions or plugins
-# - **Reusability**: Components can be shared across different AI agents
-# - **Flexibility**: Clear separation between AI reasoning and business logic
-# - **Maintainability**: Changes to functions don't require retraining AI models
-#
-# In the next challenge, we'll explore tool usage and agentic RAG, taking our AI assistant capabilities even further! 
-
-# %% [markdown]
 # ## 5. File System Password Management
 #
 # Let's extend our capabilities by creating a password management assistant that can:
 #
-# 1. Read and update passwords stored in a JSON file
-# 2. Create and modify password-protected zip files
+# 1. Extract zip files with passwords
+# 2. Update zip files with new passwords
 # 3. Generate secure passwords
 #
-# This demonstrates how Semantic Kernel can interact with the filesystem to perform security-related operations.
+# This example demonstrates how Semantic Kernel can integrate with security-related operations and file system management. While our example works with a local filesystem, the same pattern applies to enterprise scenarios such as:
+#
+# - **Cloud Storage Integration**: Working with encrypted files in cloud storage systems like Azure Blob Storage or AWS S3
+# - **Secure Document Management**: Managing access to sensitive documents in corporate repositories
+# - **Credentials Management**: Integrating with enterprise credential vaults and rotation systems
+# - **Compliance Workflows**: Implementing secure document sharing with audit trails for regulatory compliance
+#
+# The key insight is that Semantic Kernel's plugin architecture allows your AI assistant to safely perform security-related operations through well-defined functions, rather than giving direct access to sensitive systems. This maintains security boundaries while still enabling helpful automation.
 
 # %%
 import json
@@ -583,79 +609,7 @@ class PasswordManagerPlugin:
     
     def __init__(self, base_dir="docs/security"):
         self.base_dir = base_dir
-        # Ensure full path is used
-        if not os.path.isabs(base_dir):
-            self.base_dir = os.path.join(os.getcwd(), "challenge-4", base_dir)
-        os.makedirs(self.base_dir, exist_ok=True)
         self.password_file = os.path.join(self.base_dir, "passwords.json")
-    
-    @kernel_function(description="Reads the current password for a specific system")
-    def read_password(self, 
-                     system_name: Annotated[str, "The name of the system to get password for"]
-                    ) -> str:
-        """Read the current password for a specific system from the password file."""
-        try:
-            if not os.path.exists(self.password_file):
-                return "Password file not found."
-            
-            with open(self.password_file, 'r') as f:
-                passwords = json.load(f)
-            
-            if 'systems' not in passwords or system_name not in passwords['systems']:
-                return f"No password found for system: {system_name}"
-            
-            return f"Current password for {system_name}: {passwords['systems'][system_name]}"
-        
-        except Exception as e:
-            return f"Error reading password: {str(e)}"
-    
-    @kernel_function(description="Updates the password for a specific system")
-    def update_password(self, 
-                       system_name: Annotated[str, "The name of the system to update password for"],
-                       new_password: Annotated[str, "The new password to set"]
-                      ) -> str:
-        """Update the password for a specific system in the password file."""
-        try:
-            passwords = {}
-            if os.path.exists(self.password_file):
-                with open(self.password_file, 'r') as f:
-                    passwords = json.load(f)
-            
-            if 'systems' not in passwords:
-                passwords['systems'] = {}
-            
-            # Store old password for confirmation message
-            old_password = passwords['systems'].get(system_name, "None")
-            
-            # Update the password
-            passwords['systems'][system_name] = new_password
-            
-            with open(self.password_file, 'w') as f:
-                json.dump(passwords, f, indent=2)
-            
-            return f"Password for {system_name} updated successfully. Changed from '{old_password}' to '{new_password}'."
-        
-        except Exception as e:
-            return f"Error updating password: {str(e)}"
-    
-    @kernel_function(description="Lists all systems with stored passwords")
-    def list_systems(self) -> str:
-        """List all systems that have passwords stored in the password file."""
-        try:
-            if not os.path.exists(self.password_file):
-                return "Password file not found."
-            
-            with open(self.password_file, 'r') as f:
-                passwords = json.load(f)
-            
-            if 'systems' not in passwords or not passwords['systems']:
-                return "No systems found with stored passwords."
-            
-            systems = list(passwords['systems'].keys())
-            return "Systems with stored passwords:\n- " + "\n- ".join(systems)
-        
-        except Exception as e:
-            return f"Error listing systems: {str(e)}"
     
     @kernel_function(description="Updates the password for a zip file")
     def update_zip_password(self, 
@@ -704,6 +658,31 @@ class PasswordManagerPlugin:
         
         except Exception as e:
             return f"Error updating zip password: {str(e)}"
+
+    @kernel_function(description="Unzips a file with a password")
+    def unzip_file(self,
+                  zip_name: Annotated[str, "Name of the zip file without extension"],
+                  password: Annotated[str, "Password to use for extraction"]
+                 ) -> str:
+        """Extract contents from a password-protected zip file."""
+        try:
+            zip_path = os.path.join(self.base_dir, f"{zip_name}.zip")
+            if not os.path.exists(zip_path):
+                return f"Zip file not found: {zip_name}.zip"
+            
+            extract_dir = self.base_dir
+            
+            # Extract the zip with password
+            try:
+                with zipfile.ZipFile(zip_path) as zf:
+                    zf.extractall(path=extract_dir, pwd=password.encode())
+            except Exception as e:
+                return f"Failed to extract zip file. Check if the password is correct: {str(e)}"
+            
+            return f"Successfully extracted {zip_name}.zip to {extract_dir}"
+        
+        except Exception as e:
+            return f"Error extracting zip file: {str(e)}"
     
     @kernel_function(description="Generates a strong random password")
     def generate_password(self, 
@@ -804,38 +783,35 @@ async def chat_with_password_assistant(question: str):
 # Now, let's test our password management assistant with some scenarios:
 
 # %%
-# First, let's check what systems have passwords stored
-question = "What systems do we have passwords stored for?"
-response = await chat_with_password_assistant(question)
-
-# %%
-# Let's update a password
-question = "I need to change the VPN password to a more secure one. Can you help me update it?"
-response = await chat_with_password_assistant(question)
-
-# %%
-# Let's check the current password for a system
-question = "What's the current password for the GitHub system?"
-response = await chat_with_password_assistant(question)
-
-# %%
 # Let's update a zip file password
 question = "I need to change the password for the confidential.zip file. The current password is 'oldZipPass123'. Can you generate a secure password and update it?"
 response = await chat_with_password_assistant(question)
 
 # %% [markdown]
-# ## Summary
+# Now update the following prompt with the new password for the confidential.zip file.
+
+# %%
+question = "I to see the contents of the confidential.zip file. The current password is 'oldZipPass123'"
+response = await chat_with_password_assistant(question)
+
+# %% [markdown]
+# ## Conclusion
 #
-# In this extended challenge, we've added a practical application of Semantic Kernel by creating a password management assistant. This showcases how:
+# In this challenge, we've explored the key features of Semantic Kernel that make it powerful for building AI agents:
 #
-# 1. **Native Functions can interact with the filesystem** - Reading and writing to password files
-# 2. **Security operations can be encapsulated** - Password generation and file encryption
-# 3. **AI assistants can manipulate sensitive data safely** - By using functions as a controlled interface
+# 1. **Semantic Functions**: Creating reusable AI prompts as functions
+# 2. **Native Functions**: Integrating code with AI capabilities
+# 3. **Plugins**: Organizing related functions into logical groups
+# 4. **Function Calling**: Giving the AI the ability to call your functions when needed
+# 5. **Chat Context**: Maintaining conversation state across interactions
 #
-# This pattern is particularly powerful for enterprise applications where security is paramount. By creating a controlled interface through native functions, we ensure that:
+# Our examples demonstrate how Semantic Kernel can be used to build practical applications that combine AI with custom business logic. By structuring your application this way, you get:
 #
-# - The AI can't directly access or manipulate sensitive files without going through validated code
-# - Security best practices are enforced programmatically
-# - Complex operations (like zip password changing) are abstracted into simple interfaces
+# - **Modularity**: Easy to extend with new functions or plugins
+# - **Reusability**: Components can be shared across different AI agents
+# - **Flexibility**: Clear separation between AI reasoning and business logic
+# - **Maintainability**: Changes to functions don't require retraining AI models
 #
-# This example provides a foundation that could be extended to more comprehensive security operations, such as certificate management, encryption key rotation, or secure backup systems. 
+# These patterns are especially powerful for building enterprise applications where you need to integrate AI with existing systems, data sources, and business rules.
+#
+# In the [next challenge](../challenge-5/README.md), we'll explore tool usage and agentic RAG, taking our AI assistant capabilities even further with Retrieval-Augmented Generation in an agentic context. You'll learn how to build intelligent assistants that can leverage company documentation to answer queries accurately and make smart decisions about when to search for information. 

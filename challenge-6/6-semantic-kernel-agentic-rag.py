@@ -14,7 +14,7 @@
 # ---
 
 # %% [markdown]
-# # Challenge 5: Tool Usage & Agentic RAG
+# # Challenge 6: Tool Usage & Agentic RAG
 #
 # In this challenge, we'll explore how to build an intelligent assistant that leverages Retrieval-Augmented Generation (RAG) in an agentic context. We'll create a system that can index company documentation, retrieve relevant information, and intelligently answer user queries.
 #

@@ -157,7 +157,7 @@ result = await kernel.invoke(
     arguments=KernelArguments(acronym="VPN")
 )
 
-print(result)
+display(Markdown(str(result)))
 
 # %%
 # Try with another acronym
@@ -167,7 +167,7 @@ result = await kernel.invoke(
     arguments=KernelArguments(acronym="SSO")
 )
 
-print(result)
+display(Markdown(str(result)))
 
 # %% [markdown]
 # ## 2. Creating Native Functions (Code as Functions)
@@ -213,7 +213,7 @@ class ITSupportPlugin:
         Get minimum system requirements for running company software.
         """
         requirements = {
-            "design_suite": "Windows 10/11 or macOS 10.15+\nProcessor: Intel i5/AMD Ryzen 5 or better\nRAM: 16GB minimum\nStorage: 256GB SSD\nGraphics: Dedicated GPU with 4GB VRAM",
+            "design_suite": "Windows 10/11 or macOS 10.15+\nProcessor: Intel i5/AMD Ryzen 5 or better\nRAM: 16GB minimum\nStorage: 256GB SSD\nGraphics: Dedicated GPU with 4GB VRAM \Internal",
             
             "development_environment": "Windows 10/11, macOS 10.15+, or Linux\nProcessor: Intel i7/AMD Ryzen 7 or better\nRAM: 32GB recommended\nStorage: 512GB SSD\nAdditional: Docker compatibility required",
             
@@ -268,7 +268,7 @@ result = await kernel.invoke(
     KernelArguments(tool="vpn")
 )
 
-print(result)
+display(Markdown(str(result)))
 
 # %%
 # Check system requirements for the development environment
@@ -277,7 +277,7 @@ result = await kernel.invoke(
     KernelArguments(software="development_environment")
 )
 
-print(result)
+display(Markdown(str(result)))
 
 # %% [markdown]
 # ### Manually Calling Functions and Combining Results
@@ -328,7 +328,7 @@ formatted_guide = await kernel.invoke(
     )
 )
 
-print(formatted_guide)
+display(Markdown(str(formatted_guide)))
 
 # %% [markdown]
 # This example demonstrates how Semantic Kernel allows you to:
@@ -414,7 +414,7 @@ dev_guide = await kernel.invoke(
     )
 )
 
-print(dev_guide)
+display(Markdown(str(dev_guide)))
 
 # %% [markdown]
 # This example demonstrates the power of Semantic Kernel's prompt templating with function calling. Notice how:
@@ -515,11 +515,6 @@ hr_assistant = kernel.add_function(
 
 # %%
 async def chat_with_hr_assistant(question: str):
-    # Get plugins we want the assistant to use
-    available_plugins = [
-        calculator,
-        it_support
-    ]
 
     # Let the assistant decide which functions to call
     result = await kernel.invoke(
@@ -527,6 +522,7 @@ async def chat_with_hr_assistant(question: str):
         plugin_name="hr_assistant",
         arguments=KernelArguments(
             settings=OpenAIPromptExecutionSettings(
+                # This is what enables automatic function calling
                 function_choice_behavior=FunctionChoiceBehavior.Auto()
             ),
             input=question
@@ -560,21 +556,53 @@ async def chat_with_hr_assistant(question: str):
 
 # %%
 # First interaction - setting up for a new developer
-question = "what is 2+3"
+question = "How do I set up my GitHub account?"
 response = await chat_with_hr_assistant(question)
-print(response)
+display(Markdown(str(response)))
 
 # %%
 # Second interaction - budget question
-question = "Our team is onboarding 5 new designers. Each needs a high-end laptop ($2000), two monitors ($400 each), and a design tablet ($800). What's our total equipment budget for the team? Can you break down the cost per item type?"
+question = """Our team is onboarding 5 new designers. Each needs a high-end laptop ($2000), two monitors ($400 each), and a design tablet ($800).
+What's our total equipment budget for the team? Can you break down the cost per item type?"""
 response = await chat_with_hr_assistant(question)
-print(response)
+display(Markdown(str(response)))
+
+# %% [markdown]
+# What if we add a new function to the it_support plugin to get the price of hardware compontents for each internal product?
+
+# %%
+
+from typing import Literal
+
+
+@kernel_function(description="Get the price of a laptop for a given hardware component")
+def get_hardware_price(component: Annotated[str, "The internal name of the hardware component, one of designer-laptop, developer-laptop, keyboard, monitor, design-tablet"]) -> str:
+    """Return the price of a laptop for a given hardware component."""
+    prices = {
+        "designer-laptop": 2000,
+        "developer-laptop": 3000,
+        "keyboard": 150,
+        "monitor": 400,
+        "design-tablet": 800
+    }
+    
+    if component in prices:
+        print(f"The price of {component} is ${prices[component]}.")
+        return f"The price of {component} is ${prices[component]}."
+    else:
+        print(f"Price for {component} not found.")
+        return f"Price for {component} not found."
+
+kernel.add_function(plugin_name="it_support", function=get_hardware_price)
 
 # %%
 # Third interaction - budget calculation question
-question = "We need to order equipment for 3 new developers and 2 designers. Developers need laptops ($1800 each), monitors ($350 each), and mechanical keyboards ($150 each). Designers need laptops ($2200 each), monitors ($400 each), and design tablets ($600 each). Please calculate the total budget needed and break it down by role and item type."
+question = """We need to order equipment for 3 new developers and 2 designers.
+Developers need laptops and monitors. Designers need laptops, monitors, and design tablets.
+Please calculate the total budget needed and break it down by role and item type."""
+
 response = await chat_with_hr_assistant(question)
-print(response)
+display(Markdown(str(response)))
 
 # %% [markdown]
 # ## 5. File System Password Management
@@ -683,6 +711,8 @@ class PasswordManagerPlugin:
         
         except Exception as e:
             return f"Error extracting zip file: {str(e)}"
+        
+    
     
     @kernel_function(description="Generates a strong random password")
     def generate_password(self, 
@@ -791,7 +821,7 @@ response = await chat_with_password_assistant(question)
 # Now update the following prompt with the new password for the confidential.zip file.
 
 # %%
-question = "I to see the contents of the confidential.zip file. The current password is 'oldZipPass123'"
+question = "I want to see the contents of the confidential.zip file. The current password is 'oldZipPass123'"
 response = await chat_with_password_assistant(question)
 
 # %% [markdown]

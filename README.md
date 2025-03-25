@@ -20,8 +20,8 @@ This hackathon consists of 7 progressive challenges that will take you from the 
 - **Challenge 2**: Exploring Agentic AI Frameworks
 - **Challenge 3**: Fundamentals of Prompt Engineering & Evaluation
 - **Challenge 4**: Functions & Plugins with Semantic Kernel
-- **Challenge 5**: Tool Usage & Agentic RAG
-- **Challenge 6**: Building an AI Agent with Multiple Tools
+- **Challenge 5**: Azure AI Agents SDK - Tools & Agents Simplified
+- **Challenge 6**: Tool Usage & Agentic RAG
 - **Challenge 7**: Multi-Agent Collaboration with Semantic Kernel & AutoGen
 
 ## Prerequisites

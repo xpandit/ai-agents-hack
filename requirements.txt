@@ -1,0 +1,8 @@
+python-dotenv  
+pandas
+openai
+numpy
+matplotlib
+azure-ai-evaluation == 1.2.0
+ipywidgets
+ipykernel

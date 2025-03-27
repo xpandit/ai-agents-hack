@@ -1,9 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-# Jupyter Notebook Rules
-## You're not very good at using ipynb format, so you always use the py:percent format (.py files)
-## You can sync between the formats using jupytext
-## DO NOT remove the awaits, even if it causes linter errors. I'll convert the file to ipynb so those are needed there

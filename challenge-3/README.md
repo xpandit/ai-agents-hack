@@ -55,7 +55,7 @@ Go back to your `Azure Portal` and find your `Resource Group` that should by now
 
 ![image](https://github.com/user-attachments/assets/e04298dd-a601-47a2-8fda-bd0cac19f313)
 
-After checking the deployed resources, you will need to configure the environment variables in the `.env` file. The `.env` file is a configuration file that contains the environment variables for the application. The `.env` file is automatically created running the following command within the terminal in your Codespace:
+After checking the deployed resources, you will need to configure the environment variables in the `.env` file. The `.env` file is a configuration file that contains the environment variables for the application. If you were given a pre-configured Azure user the `.env` file is automatically created running the following command within the terminal in your Codespace:
 
 ```bash
 cd challenge-3

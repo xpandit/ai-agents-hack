@@ -388,3 +388,5 @@ fi
 
 echo "Environment configured successfully!"
 echo "All required variables are set in $ENV_FILE"
+
+

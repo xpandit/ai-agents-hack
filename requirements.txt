@@ -1,0 +1,15 @@
+python-dotenv  
+pandas
+openai
+numpy
+PyPDF2
+matplotlib
+semantic-kernel==1.25.0
+ipywidgets
+ipykernel
+azure-ai-evaluation
+azure-ai-projects
+azure-identity
+azure-search-documents
+autogen-agentchat
+autogen-ext[openai,azure]

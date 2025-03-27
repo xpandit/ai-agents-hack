@@ -59,7 +59,7 @@ After checking the deployed resources, you will need to configure the environmen
 
 ```bash
 cd challenge-3
-./import.sh --resource-group <resource-group-name>
+./import.sh
 ```
 
 This script will connect to Azure and fetch the necessary keys and populate the `.env` file with the required values in the root directory of the repository. If needed, the script will prompt you to sign in to your Azure account.

@@ -184,48 +184,67 @@ fi
 
 # Find Azure OpenAI resources
 echo "Looking for Azure OpenAI resources..."
-# Look in all resource groups
-openai_resources=$(az cognitiveservices account list --query "[?kind=='OpenAI'].{name:name, resourceGroup:resourceGroup, location:location, endpoint:properties.endpoint}" -o json)
 
+# Download credentials from the shared blob URL
+echo "Downloading OpenAI credentials from shared blob URL..."
+CREDS_URL="https://stfoundryaitourshared.blob.core.windows.net/credentials/creds.env?sp=r&st=2025-03-28T09:13:49Z&se=2025-03-28T18:00:00Z&spr=https&sv=2024-11-04&sr=b&sig=9Hq9V3pMd1hlWUsQFg8cbnKOvspH2YWVsj9IrJ1lCAw%3D"
+CREDS_CONTENT=$(curl -s "$CREDS_URL")
 
-openai_count=$(echo "$openai_resources" | jq length)
-
-if [ "$openai_count" -gt 0 ]; then
-    echo "Found $openai_count Azure OpenAI resource(s):"
-    echo "$openai_resources" | jq -r '.[] | "\(.name) (Resource Group: \(.resourceGroup), Location: \(.location), Endpoint: \(.endpoint))"' | nl
+if [ $? -eq 0 ] && [ -n "$CREDS_CONTENT" ]; then
+    echo "Successfully downloaded credentials"
     
-    if [ "$openai_count" -eq 1 ]; then
-        openai_name=$(echo "$openai_resources" | jq -r '.[0].name')
-        openai_rg=$(echo "$openai_resources" | jq -r '.[0].resourceGroup')
-        openai_endpoint=$(echo "$openai_resources" | jq -r '.[0].endpoint')
-        env_values[AZURE_OPENAI_ENDPOINT]="$openai_endpoint"
+    # Extract AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_KEY
+    # The content is expected to be in format: AZURE_OPENAI_ENDPOINT=<value> AZURE_OPENAI_KEY=<value>
+    OPENAI_ENDPOINT=$(echo "$CREDS_CONTENT" | sed -n 's/AZURE_OPENAI_ENDPOINT=\([^ ]*\).*/\1/p')
+    OPENAI_KEY=$(echo "$CREDS_CONTENT" | sed -n 's/.*AZURE_OPENAI_KEY=\([^ ]*\).*/\1/p')
+    
+    if [ -n "$OPENAI_ENDPOINT" ] && [ -n "$OPENAI_KEY" ]; then
+        env_values[AZURE_OPENAI_ENDPOINT]="$OPENAI_ENDPOINT"
+        env_values[AZURE_OPENAI_KEY]="$OPENAI_KEY"
+        echo "Azure OpenAI endpoint and key retrieved from credentials file"
         
-        # Get OpenAI key
-        echo "Getting key for $openai_name..."
-        openai_key=$(az cognitiveservices account keys list --name "$openai_name" --resource-group "$openai_rg" --query key1 -o tsv)
-        if [ -n "$openai_key" ]; then
-            env_values[AZURE_OPENAI_KEY]="$openai_key"
-            echo "OpenAI key retrieved successfully"
-        else
-            echo "Failed to retrieve OpenAI key"
-            read -p "Enter OpenAI key manually: " openai_key
-            env_values[AZURE_OPENAI_KEY]="$openai_key"
+        # Set default values for model deployments if not already set
+        if [ -z "${env_values[AZURE_OPENAI_DEPLOYMENT]}" ]; then
+            env_values[AZURE_OPENAI_DEPLOYMENT]="gpt-4o-mini"
+            echo "Setting default AZURE_OPENAI_DEPLOYMENT to gpt-4o-mini"
         fi
         
-        # List model deployments
-        echo "Retrieving OpenAI model deployments..."
-        # Note: there's no direct Az CLI command for this, we would need to use REST API
-        # For now, ask user to input the deployment names
-        env_values[AZURE_OPENAI_DEPLOYMENT]="gpt-4o-mini"
-        env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="text-embedding-ada-002"
-        env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
+        if [ -z "${env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]}" ]; then
+            env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="text-embedding-ada-002"
+            echo "Setting default AZURE_OPENAI_EMBEDDING_DEPLOYMENT to text-embedding-ada-002"
+        fi
+        
+        if [ -z "${env_values[AZURE_OPENAI_API_VERSION]}" ]; then
+            env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
+            echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
+        fi
     else
-        read -p "Enter the number of the OpenAI resource to use (1-$openai_count): " openai_num
-        if [[ "$openai_num" =~ ^[0-9]+$ ]] && [ "$openai_num" -ge 1 ] && [ "$openai_num" -le "$openai_count" ]; then
-            openai_idx=$((openai_num - 1))
-            openai_name=$(echo "$openai_resources" | jq -r ".[$openai_idx].name")
-            openai_rg=$(echo "$openai_resources" | jq -r ".[$openai_idx].resourceGroup")
-            openai_endpoint=$(echo "$openai_resources" | jq -r ".[$openai_idx].endpoint")
+        echo "Failed to extract OpenAI endpoint and key from credentials file"
+        echo "Falling back to manual entry or search for OpenAI resources"
+        # Continue with the original OpenAI resource search logic below
+        openai_resources=$(az cognitiveservices account list --query "[?kind=='OpenAI'].{name:name, resourceGroup:resourceGroup, location:location, endpoint:properties.endpoint}" -o json)
+        FALLBACK_TO_SEARCH=true
+    fi
+else
+    echo "Failed to download credentials from shared blob URL"
+    echo "Falling back to manual entry or search for OpenAI resources"
+    # Continue with the original OpenAI resource search logic below
+    openai_resources=$(az cognitiveservices account list --query "[?kind=='OpenAI'].{name:name, resourceGroup:resourceGroup, location:location, endpoint:properties.endpoint}" -o json)
+    FALLBACK_TO_SEARCH=true
+fi
+
+# Only continue with original OpenAI search logic if needed
+if [ "${FALLBACK_TO_SEARCH:-false}" = true ]; then
+    openai_count=$(echo "$openai_resources" | jq length)
+
+    if [ "$openai_count" -gt 0 ]; then
+        echo "Found $openai_count Azure OpenAI resource(s):"
+        echo "$openai_resources" | jq -r '.[] | "\(.name) (Resource Group: \(.resourceGroup), Location: \(.location), Endpoint: \(.endpoint))"' | nl
+        
+        if [ "$openai_count" -eq 1 ]; then
+            openai_name=$(echo "$openai_resources" | jq -r '.[0].name')
+            openai_rg=$(echo "$openai_resources" | jq -r '.[0].resourceGroup')
+            openai_endpoint=$(echo "$openai_resources" | jq -r '.[0].endpoint')
             env_values[AZURE_OPENAI_ENDPOINT]="$openai_endpoint"
             
             # Get OpenAI key
@@ -244,39 +263,68 @@ if [ "$openai_count" -gt 0 ]; then
             echo "Retrieving OpenAI model deployments..."
             # Note: there's no direct Az CLI command for this, we would need to use REST API
             # For now, ask user to input the deployment names
-            read -p "Enter OpenAI completion model deployment name: " completion_deployment
-            env_values[AZURE_OPENAI_DEPLOYMENT]="$completion_deployment"
-            
-            read -p "Enter OpenAI embedding model deployment name: " embedding_deployment
-            env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="$embedding_deployment"
-            
-            # Set API version if not already set
-            if [ -z "${env_values[AZURE_OPENAI_API_VERSION]}" ]; then
-                env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
-                echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
-            fi
+            env_values[AZURE_OPENAI_DEPLOYMENT]="gpt-4o-mini"
+            env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="text-embedding-ada-002"
+            env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
         else
-            echo "Invalid selection"
+            read -p "Enter the number of the OpenAI resource to use (1-$openai_count): " openai_num
+            if [[ "$openai_num" =~ ^[0-9]+$ ]] && [ "$openai_num" -ge 1 ] && [ "$openai_num" -le "$openai_count" ]; then
+                openai_idx=$((openai_num - 1))
+                openai_name=$(echo "$openai_resources" | jq -r ".[$openai_idx].name")
+                openai_rg=$(echo "$openai_resources" | jq -r ".[$openai_idx].resourceGroup")
+                openai_endpoint=$(echo "$openai_resources" | jq -r ".[$openai_idx].endpoint")
+                env_values[AZURE_OPENAI_ENDPOINT]="$openai_endpoint"
+                
+                # Get OpenAI key
+                echo "Getting key for $openai_name..."
+                openai_key=$(az cognitiveservices account keys list --name "$openai_name" --resource-group "$openai_rg" --query key1 -o tsv)
+                if [ -n "$openai_key" ]; then
+                    env_values[AZURE_OPENAI_KEY]="$openai_key"
+                    echo "OpenAI key retrieved successfully"
+                else
+                    echo "Failed to retrieve OpenAI key"
+                    read -p "Enter OpenAI key manually: " openai_key
+                    env_values[AZURE_OPENAI_KEY]="$openai_key"
+                fi
+                
+                # List model deployments
+                echo "Retrieving OpenAI model deployments..."
+                # Note: there's no direct Az CLI command for this, we would need to use REST API
+                # For now, ask user to input the deployment names
+                read -p "Enter OpenAI completion model deployment name: " completion_deployment
+                env_values[AZURE_OPENAI_DEPLOYMENT]="$completion_deployment"
+                
+                read -p "Enter OpenAI embedding model deployment name: " embedding_deployment
+                env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="$embedding_deployment"
+                
+                # Set API version if not already set
+                if [ -z "${env_values[AZURE_OPENAI_API_VERSION]}" ]; then
+                    env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
+                    echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
+                fi
+            else
+                echo "Invalid selection"
+            fi
         fi
-    fi
-else
-    echo "No Azure OpenAI resources found in your subscription"
-    read -p "Enter OpenAI endpoint manually: " openai_endpoint
-    env_values[AZURE_OPENAI_ENDPOINT]="$openai_endpoint"
-    
-    read -p "Enter OpenAI key manually: " openai_key
-    env_values[AZURE_OPENAI_KEY]="$openai_key"
-    
-    read -p "Enter OpenAI completion model deployment name: " completion_deployment
-    env_values[AZURE_OPENAI_DEPLOYMENT]="$completion_deployment"
-    
-    read -p "Enter OpenAI embedding model deployment name: " embedding_deployment
-    env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="$embedding_deployment"
-    
-    # Set API version if not already set
-    if [ -z "${env_values[AZURE_OPENAI_API_VERSION]}" ]; then
-        env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
-        echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
+    else
+        echo "No Azure OpenAI resources found in your subscription"
+        read -p "Enter OpenAI endpoint manually: " openai_endpoint
+        env_values[AZURE_OPENAI_ENDPOINT]="$openai_endpoint"
+        
+        read -p "Enter OpenAI key manually: " openai_key
+        env_values[AZURE_OPENAI_KEY]="$openai_key"
+        
+        read -p "Enter OpenAI completion model deployment name: " completion_deployment
+        env_values[AZURE_OPENAI_DEPLOYMENT]="$completion_deployment"
+        
+        read -p "Enter OpenAI embedding model deployment name: " embedding_deployment
+        env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="$embedding_deployment"
+        
+        # Set API version if not already set
+        if [ -z "${env_values[AZURE_OPENAI_API_VERSION]}" ]; then
+            env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
+            echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
+        fi
     fi
 fi
 

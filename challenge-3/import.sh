@@ -343,8 +343,41 @@ if [ "$rg_count" -gt 0 ]; then
     for rg in $(echo "$resource_groups" | jq -r '.[]'); do
         echo "Checking for AI projects in resource group: $rg"
         # List resources of type Microsoft.MachineLearningServices/workspaces
-        ai_projects=$(az resource list --resource-group "$rg" --resource-type "Microsoft.MachineLearningServices/workspaces" --query "[].{name:name, id:id}" -o json 2>/dev/null)
+        ai_projects=$(az resource list --resource-type "Microsoft.MachineLearningServices/workspaces" --query "[].{name:name, id:id}" -o json 2>/dev/null)
         
+        project_count=$(echo "$ai_projects" | jq length)
+        
+        if [ "$project_count" -gt 0 ]; then
+            echo "Found $project_count AI project(s) in $rg:"
+            echo "$ai_projects" | jq -r '.[] | "\(.name) (ID: \(.id))"' | nl
+            
+            project_id=$(echo "$ai_projects" | jq -r '.[1].id')
+            project_name=$(echo "$ai_projects" | jq -r '.[1].name')
+            echo "Using AI project: $project_name"
+
+            project_object=$(az resource show --ids "$project_id")
+            project_conn_string=$(echo "$project_object" | jq -r '.properties.workspaceId')
+
+            if [ -z "$project_conn_string" ]; then
+                echo "Failed to retrieve connection string for $project_name"
+                read -p "Enter PROJECT_CONNECTION_STRING manually: " project_conn_string
+            fi
+
+
+            project_conn_string="swedencentral.api.azureml.ms;${env_values[AZURE_SUBSCRIPTION_ID]};$rg;$project_name"
+            
+            
+            # If we found a project, break the loop
+            if [ -n "$project_conn_string" ]; then
+                break
+            fi
+        fi
+    done
+fi
+
+if [ -z "$project_conn_string" ]; then
+    ai_projects=$(az resource list --resource-group "rg-foundryhub" --resource-type "Microsoft.MachineLearningServices/workspaces" --query "[].{name:name, id:id}" -o json 2>/dev/null)
+
         project_count=$(echo "$ai_projects" | jq length)
         
         if [ "$project_count" -gt 0 ]; then
@@ -384,8 +417,9 @@ if [ "$rg_count" -gt 0 ]; then
                 break
             fi
         fi
-    done
+
 fi
+
 
 # If no project was found or the connection string couldn't be set automatically
 if [ -z "$project_conn_string" ]; then

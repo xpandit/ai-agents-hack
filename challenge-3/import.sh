@@ -184,58 +184,8 @@ fi
 
 # Find Azure OpenAI resources
 echo "Looking for Azure OpenAI resources..."
-
-# Download credentials from the shared blob URL
-echo "Downloading OpenAI credentials from shared blob URL..."
-CREDS_URL="https://stfoundryaitourshared.blob.core.windows.net/credentials/creds.env?sp=r&st=2025-03-28T09:13:49Z&se=2025-03-28T18:00:00Z&spr=https&sv=2024-11-04&sr=b&sig=9Hq9V3pMd1hlWUsQFg8cbnKOvspH2YWVsj9IrJ1lCAw%3D"
-CREDS_CONTENT=$(curl -s "$CREDS_URL")
-
-if [ $? -eq 0 ] && [ -n "$CREDS_CONTENT" ]; then
-    echo "Successfully downloaded credentials"
-    
-    # Extract AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_KEY
-    # The content is expected to be in format: AZURE_OPENAI_ENDPOINT=<value> AZURE_OPENAI_KEY=<value>
-    OPENAI_ENDPOINT=$(echo "$CREDS_CONTENT" | sed -n 's/AZURE_OPENAI_ENDPOINT=\([^ ]*\).*/\1/p')
-    OPENAI_KEY=$(echo "$CREDS_CONTENT" | sed -n 's/.*AZURE_OPENAI_KEY=\([^ ]*\).*/\1/p')
-    
-    if [ -n "$OPENAI_ENDPOINT" ] && [ -n "$OPENAI_KEY" ]; then
-        env_values[AZURE_OPENAI_ENDPOINT]="$OPENAI_ENDPOINT"
-        env_values[AZURE_OPENAI_KEY]="$OPENAI_KEY"
-        echo "Azure OpenAI endpoint and key retrieved from credentials file"
-        
-        # Set default values for model deployments if not already set
-        if [ -z "${env_values[AZURE_OPENAI_DEPLOYMENT]}" ]; then
-            env_values[AZURE_OPENAI_DEPLOYMENT]="gpt-4o-mini"
-            echo "Setting default AZURE_OPENAI_DEPLOYMENT to gpt-4o-mini"
-        fi
-        
-        if [ -z "${env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]}" ]; then
-            env_values[AZURE_OPENAI_EMBEDDING_DEPLOYMENT]="text-embedding-ada-002"
-            echo "Setting default AZURE_OPENAI_EMBEDDING_DEPLOYMENT to text-embedding-ada-002"
-        fi
-        
-        if [ -z "${env_values[AZURE_OPENAI_API_VERSION]}" ]; then
-            env_values[AZURE_OPENAI_API_VERSION]="2024-12-01-preview"
-            echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
-        fi
-    else
-        echo "Failed to extract OpenAI endpoint and key from credentials file"
-        echo "Falling back to manual entry or search for OpenAI resources"
-        # Continue with the original OpenAI resource search logic below
-        openai_resources=$(az cognitiveservices account list --query "[?kind=='OpenAI'].{name:name, resourceGroup:resourceGroup, location:location, endpoint:properties.endpoint}" -o json)
-        FALLBACK_TO_SEARCH=true
-    fi
-else
-    echo "Failed to download credentials from shared blob URL"
-    echo "Falling back to manual entry or search for OpenAI resources"
-    # Continue with the original OpenAI resource search logic below
-    openai_resources=$(az cognitiveservices account list --query "[?kind=='OpenAI'].{name:name, resourceGroup:resourceGroup, location:location, endpoint:properties.endpoint}" -o json)
-    FALLBACK_TO_SEARCH=true
-fi
-
-# Only continue with original OpenAI search logic if needed
-if [ "${FALLBACK_TO_SEARCH:-false}" = true ]; then
-    openai_count=$(echo "$openai_resources" | jq length)
+openai_resources=$(az cognitiveservices account list --query "[?kind=='OpenAI'].{name:name, resourceGroup:resourceGroup, location:location, endpoint:properties.endpoint}" -o json)
+openai_count=$(echo "$openai_resources" | jq length)
 
     if [ "$openai_count" -gt 0 ]; then
         echo "Found $openai_count Azure OpenAI resource(s):"
@@ -326,7 +276,6 @@ if [ "${FALLBACK_TO_SEARCH:-false}" = true ]; then
             echo "Setting AZURE_OPENAI_API_VERSION to latest: 2024-12-01-preview"
         fi
     fi
-fi
 
 # For PROJECT_CONNECTION_STRING, we need to:
 # 1. Find the Azure AI project in the resource group that we found previously

@@ -353,6 +353,7 @@ if [ "$rg_count" -gt 0 ]; then
             
             project_id=$(echo "$ai_projects" | jq -r '.[1].id')
             project_name=$(echo "$ai_projects" | jq -r '.[1].name')
+            project_rg=$(echo "$project_object" | jq -r '.resourceGroup')
             echo "Using AI project: $project_name"
 
             project_object=$(az resource show --ids "$project_id")
@@ -364,7 +365,7 @@ if [ "$rg_count" -gt 0 ]; then
             fi
 
 
-            project_conn_string="swedencentral.api.azureml.ms;${env_values[AZURE_SUBSCRIPTION_ID]};$rg;$project_name"
+            project_conn_string="swedencentral.api.azureml.ms;${env_values[AZURE_SUBSCRIPTION_ID]};$project_rg;$project_name"
             
             
             # If we found a project, break the loop

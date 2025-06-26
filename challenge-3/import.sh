@@ -302,11 +302,12 @@ if [ "$rg_count" -gt 0 ]; then
             
             project_id=$(echo "$ai_projects" | jq -r '.[1].id')
             project_name=$(echo "$ai_projects" | jq -r '.[1].name')
-            project_rg=$(echo "$project_object" | jq -r '.resourceGroup')
+            
             echo "Using AI project: $project_name"
 
             project_object=$(az resource show --ids "$project_id")
             project_conn_string=$(echo "$project_object" | jq -r '.properties.workspaceId')
+            project_rg=$(echo "$project_object" | jq -r '.resourceGroup')
 
             if [ -z "$project_conn_string" ]; then
                 echo "Failed to retrieve connection string for $project_name"
